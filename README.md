@@ -1,118 +1,120 @@
-# Perth Rental Affordability Tracker
+# Perth Rental Finder
 
-> **Core question:** Which Perth suburbs are locking vulnerable renters into a cycle of disadvantage?
-> **Key chatbot query:** "Can a nurse afford to rent near Fiona Stanley Hospital?"
+A conversational rental-search app for Perth and regional WA, built on a
+proper dimensional data warehouse over 470,254 real WA government rental
+bond records (March 2023 – May 2026). FastAPI backend, an embedded HTML/JS
+chat frontend, DuckDB for storage and analytics.
 
-Built with Python · DuckDB · Claude API · Streamlit
+## What this actually is
 
----
+Most of this project's interesting decisions are about taking a working
+prototype — a chatbot that answered convincingly for a curated set of 26
+suburbs — and rebuilding its data layer so it correctly covers the other
+~1,196 suburbs that were sitting in the same raw dataset the whole time,
+unreachable because of how the original queries were written.
 
-## Project Structure
+`DATA_QUALITY.md` is the detailed writeup: the specific bugs this surfaced
+(a postcode-formatted-as-a-string join bug, a suburb name substring
+collision, a second independent code path that disagreed with the first one
+about the same suburb's rent), how each was found through live testing
+rather than code review alone, and where the data is genuinely thin versus
+where it's been backfilled and clearly flagged as such.
 
-```
-perth-rental-tracker/
-├── README.md
-├── requirements.txt
-├── .env.example
-├── app.py                        # Main Streamlit app (entry point)
-├── pages/
-│   ├── 1_Map.py                  # Choropleth map page
-│   └── 2_Data_Explorer.py        # Raw data explorer page
-├── scripts/
-│   ├── 01_download_data.py       # Step 1: Download all 4 datasets
-│   ├── 02_ingest_duckdb.py       # Step 2: Load into DuckDB
-│   ├── 03_build_affordability.py # Step 3: Build analytics tables
-│   └── 04_verify.py              # Step 4: Verify everything looks right
-├── agent.py                      # Claude agent with tool-use loop
-├── database.py                   # DuckDB connection + query helpers
-├── tools.py                      # The 3 agent tools (query functions)
-└── data/                         # Downloaded datasets land here (gitignored)
-```
-
----
-
-## Quick Start
-
-### 1. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 2. Set your Anthropic API key
-
-```bash
-cp .env.example .env
-# Edit .env and add your key
-```
-
-### 3. Download the datasets
-
-```bash
-python scripts/01_download_data.py
-```
-
-This downloads:
-- **WA Rental Bond Data** — monthly tenancy records (AHDAP)
-- **ABS SEIFA 2021** — disadvantage index by postcode
-- **ABS 2021 Census G02** — income & housing data by SA2
-- **ATO Postcode Tax Stats** — taxable income by postcode
-
-> Most files download automatically. The ATO individual sample file requires a brief registration (see script output for instructions).
-
-### 4. Ingest into DuckDB
-
-```bash
-python scripts/02_ingest_duckdb.py
-python scripts/03_build_affordability.py
-python scripts/04_verify.py
-```
-
-### 5. Run the app
-
-```bash
-streamlit run app.py
-```
-
----
-
-## Dataset Sources
-
-| # | Dataset | Source | Licence |
-|---|---------|--------|---------|
-| 01 | WA Rental Bond Data | [AHDAP](https://housing-data-exchange.ahdap.org/dataset/west-australia-rental-bonds-data-2023-current) | CC BY 4.0 |
-| 02 | ABS SEIFA 2021 | [ABS](https://www.abs.gov.au/statistics/people/people-and-communities/socio-economic-indexes-areas-seifa-australia/latest-release) | CC BY 4.0 |
-| 03 | ABS Census 2021 DataPack | [ABS](https://www.abs.gov.au/census/find-census-data/datapacks) | CC BY 4.0 |
-| 04 | ATO Taxation Statistics 2022–23 | [ATO](https://www.ato.gov.au/about-ato/research-and-statistics/in-detail/taxation-statistics/taxation-statistics-2022-23/) | CC BY 4.0 |
-
----
-
-## What the Chatbot Answers
-
-| Type | Example Query |
-|------|--------------|
-| Key worker | "Can a nurse on a single income afford a 2-bed unit near Fiona Stanley Hospital?" |
-| Suburb search | "Show suburbs where a teacher can afford to rent" |
-| Trend | "How has rent changed in Armadale over 12 months?" |
-| Stress zones | "Which suburbs have both high rent stress AND high disadvantage?" |
-| Availability | "How many rentals are under $450/week in Perth metro?" |
-| Compare | "Compare affordability in Fremantle vs Midland for $80k income" |
-
----
-
-## Affordability Formula
+## Architecture
 
 ```
-rent_to_income_ratio = (median_weekly_rent × 52) / median_annual_income
-rental_stress = rent_to_income_ratio > 0.30  # 30% threshold
+Raw source tables (19 tables, ~470k bond records, government data)
+        │
+        ▼
+dim_suburb, dim_suburb_alias, dim_month        (build_dim_suburb.py)
+        │
+        ├──► fact_rent_trend                   (build_fact_rent_trend.py)
+        ├──► fact_suburb_profile               (build_fact_suburb_profile.py)
+        └──► fact_suburb_amenities             (build_fact_suburb_amenities.py,
+                                                  load_bus_proximity.py)
+        │
+        ▼
+main.py  ── get_all_suburbs_data() / get_rent_trend_for()
+        │         reads the warehouse, not the raw tables
+        ├──► 6 named workflows (search, deep dive, compare, negotiate,
+        │     property advisor, application review)
+        └──► general workflow ──► agent.py / tools.py
+                                    (Claude tool-calling loop, same warehouse)
 ```
 
----
+The dimensional model exists so that every part of the app — the chat
+workflows in `main.py`, the agent's tools in `tools.py`, and (eventually)
+any dashboard — reads suburb data through the same `dim_suburb` /
+`dim_suburb_alias` resolution and the same fact tables, rather than each
+having its own slightly-different idea of which 26 suburbs exist or how a
+raw spelling maps to a canonical name.
 
-## LinkedIn Post Strategy
+## Coverage
 
-- Lead with a stark finding (e.g. "X% of Perth suburbs are unaffordable for a single nurse")
-- 30-second screen recording of the chatbot
-- One sentence on the stack
-- Tag: @REIWA @DeptCommunitiesWA @ABS @ATO @Anthropic @Streamlit
-- End with: "Which suburb surprised you most?"
+| | |
+|---|---|
+| Total suburbs | 1,222 |
+| With rent history | 1,163 |
+| With full affordability profile (2BR/3BR rent, tenancy, dispute rate) | 26 |
+| With ATO income / SEIFA decile | 173 |
+| With school data | 1,129 |
+| With train proximity | 1,055 |
+| With crime data (district-level) | 173 |
+
+The 26-suburb profile set is real, detailed data for those specific
+suburbs — not a placeholder. Every other suburb still gets real rent
+history and, where available, school/train/crime data; it just doesn't get
+the deeper affordability profile, and the app is honest about that rather
+than estimating it. See `DATA_QUALITY.md` for the full reasoning on what
+gets estimated (a narrow, flagged exception for two ranking-only fields)
+versus what's simply left absent.
+
+## Running it
+
+Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
+
+```powershell
+# Build the warehouse (run once, or after source data changes)
+uv run python build_dim_suburb.py
+uv run python load_bus_proximity.py
+uv run python build_fact_rent_trend.py
+uv run python build_fact_suburb_profile.py
+uv run python build_fact_suburb_amenities.py
+
+# Validate the build
+uv run python test_data_model.py
+
+# Run the app
+uv run python -m uvicorn main:app --reload --port 8502
+```
+
+`main.py` requires `database.py` (a thin DuckDB connection wrapper, not
+included in this listing — see your local setup) and an `ANTHROPIC_API_KEY`
+environment variable for the conversational workflows.
+
+## Key files
+
+- `main.py` — FastAPI app: the embedded chat frontend, the 6 named
+  workflow handlers, and the warehouse-reading data functions
+  (`get_all_suburbs_data`, `get_rent_trend_for`, `suburb_to_card`,
+  `suburb_deep_dive`, `find_suburb_mentions`, `match_suburbs`)
+- `agent.py` — the Claude tool-calling loop for free-form questions that
+  don't match one of the 6 named workflows
+- `tools.py` — the tools the agent above can call, reading the same
+  warehouse as `main.py`
+- `build_dim_suburb.py`, `build_fact_rent_trend.py`,
+  `build_fact_suburb_profile.py`, `build_fact_suburb_amenities.py`,
+  `load_bus_proximity.py` — the ETL scripts that build the warehouse from
+  raw source tables
+- `test_data_model.py` — referential integrity and coverage checks against
+  the built warehouse
+- `schema.sql` — full DDL reference for the dimensional model
+- `DATA_QUALITY.md` — the detailed findings, fixes, and known limitations
+
+## Status
+
+The data warehouse and all 6 named chat workflows, plus the general/agent
+fallback path, have been built, tested against real data, and smoke-tested
+against the live running app. A dashboard and full deployment are not yet
+built — see `DATA_QUALITY.md` and `PROJECT_FRAMEWORK.md` for what's done
+and what's still ahead.
