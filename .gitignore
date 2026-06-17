@@ -1,0 +1,40 @@
+# Secrets — never commit these
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.venv/
+venv/
+
+# Raw source data — large, not needed at runtime (the app only reads
+# data/rental.duckdb, which is NOT excluded below on purpose)
+data/ato/
+data/census/
+data/crime/
+data/gtfs/
+data/rental_bonds/
+data/schools/
+data/seifa/
+data/*.zip
+!data/rental.duckdb
+
+# Old/diagnostic scripts not part of the deployed app
+archive/
+
+# Stray debug output
+output*.txt
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
