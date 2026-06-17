@@ -1,5 +1,7 @@
 # Perth Rental Finder
 
+**Live: [add Render URL here once deployed]** · [Dashboard](/dashboard) · `DEPLOYMENT.md` has the full deploy writeup.
+
 A conversational rental-search app for Perth and regional WA, built on a
 proper dimensional data warehouse over 470,254 real WA government rental
 bond records (March 2023 – May 2026). FastAPI backend, an embedded HTML/JS
@@ -115,6 +117,10 @@ environment variable for the conversational workflows.
 
 The data warehouse and all 6 named chat workflows, plus the general/agent
 fallback path, have been built, tested against real data, and smoke-tested
-against the live running app. A dashboard and full deployment are not yet
-built — see `DATA_QUALITY.md` and `PROJECT_FRAMEWORK.md` for what's done
-and what's still ahead.
+against the live running app. The `/dashboard` page is built and live,
+reading from the same warehouse as the chat workflows. See
+`DATA_QUALITY.md` and `DEPLOYMENT.md` for the full findings and how this is
+deployed.
+
+**Live app**: see the link at the top of this README (add it here once the
+Render deploy is confirmed working end to end).
