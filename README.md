@@ -1,126 +1,146 @@
-# Perth Rental Finder
+# 🏠 Perth Rental Finder
 
-**Live: [add Render URL here once deployed]** · [Dashboard](/dashboard) · `DEPLOYMENT.md` has the full deploy writeup.
+An AI-powered rental search tool for Perth, Western Australia — built as a portfolio project using real government bond data and large language models.
 
-A conversational rental-search app for Perth and regional WA, built on a
-proper dimensional data warehouse over 470,254 real WA government rental
-bond records (March 2023 – May 2026). FastAPI backend, an embedded HTML/JS
-chat frontend, DuckDB for storage and analytics.
+![Python](https://img.shields.io/badge/Python-3.11+-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-green) ![Claude API](https://img.shields.io/badge/Claude-API-orange) ![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
-## What this actually is
+---
 
-Most of this project's interesting decisions are about taking a working
-prototype — a chatbot that answered convincingly for a curated set of 26
-suburbs — and rebuilding its data layer so it correctly covers the other
-~1,196 suburbs that were sitting in the same raw dataset the whole time,
-unreachable because of how the original queries were written.
+## What It Does
 
-`DATA_QUALITY.md` is the detailed writeup: the specific bugs this surfaced
-(a postcode-formatted-as-a-string join bug, a suburb name substring
-collision, a second independent code path that disagreed with the first one
-about the same suburb's rent), how each was found through live testing
-rather than code review alone, and where the data is genuinely thin versus
-where it's been backfilled and clearly flagged as such.
+Perth Rental Finder helps renters find the right suburb based on their budget and lifestyle priorities. It uses **470,254 real WA government bond records** to surface honest, data-driven insights rather than marketing copy.
 
-## Architecture
+**Key features:**
+- Conversational questionnaire — budget → area → amenity priorities → results
+- Region-aware filtering (north/south/east Perth enforced in results)
+- Ascending rent sort — cheapest matching suburbs shown first
+- Conversation persistence — chat history saved across browser sessions
+- 7 renter calculators: affordability, sharehouse split, moving costs, lease break, rent scenario planner, WA renter checklist, suburb insights
+- Free-form chat after search — compare suburbs, deep dive, property advisor
+- Dark mode, mobile-responsive, no login required
 
-```
-Raw source tables (19 tables, ~470k bond records, government data)
-        │
-        ▼
-dim_suburb, dim_suburb_alias, dim_month        (build_dim_suburb.py)
-        │
-        ├──► fact_rent_trend                   (build_fact_rent_trend.py)
-        ├──► fact_suburb_profile               (build_fact_suburb_profile.py)
-        └──► fact_suburb_amenities             (build_fact_suburb_amenities.py,
-                                                  load_bus_proximity.py)
-        │
-        ▼
-main.py  ── get_all_suburbs_data() / get_rent_trend_for()
-        │         reads the warehouse, not the raw tables
-        ├──► 6 named workflows (search, deep dive, compare, negotiate,
-        │     property advisor, application review)
-        └──► general workflow ──► agent.py / tools.py
-                                    (Claude tool-calling loop, same warehouse)
-```
+---
 
-The dimensional model exists so that every part of the app — the chat
-workflows in `main.py`, the agent's tools in `tools.py`, and (eventually)
-any dashboard — reads suburb data through the same `dim_suburb` /
-`dim_suburb_alias` resolution and the same fact tables, rather than each
-having its own slightly-different idea of which 26 suburbs exist or how a
-raw spelling maps to a canonical name.
+## Tech Stack
 
-## Coverage
-
-| | |
+| Layer | Technology |
 |---|---|
-| Total suburbs | 1,222 |
-| With rent history | 1,163 |
-| With full affordability profile (2BR/3BR rent, tenancy, dispute rate) | 26 |
-| With ATO income / SEIFA decile | 173 |
-| With school data | 1,129 |
-| With train proximity | 1,055 |
-| With crime data (district-level) | 173 |
+| Backend | Python, FastAPI, Pandas |
+| Frontend | Vanilla JS, Chart.js, CSS custom properties |
+| AI | Claude API (Anthropic) |
+| Data | WA Government Bond Records (470K+ records) |
+| Hosting | Local / any Python-compatible server |
 
-The 26-suburb profile set is real, detailed data for those specific
-suburbs — not a placeholder. Every other suburb still gets real rent
-history and, where available, school/train/crime data; it just doesn't get
-the deeper affordability profile, and the app is honest about that rather
-than estimating it. See `DATA_QUALITY.md` for the full reasoning on what
-gets estimated (a narrow, flagged exception for two ranking-only fields)
-versus what's simply left absent.
+---
 
-## Running it
+## Project Background
 
-Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
+This was built as a capstone portfolio project across two Ed Donner courses:
 
-```powershell
-# Build the warehouse (run once, or after source data changes)
-uv run python build_dim_suburb.py
-uv run python load_bus_proximity.py
-uv run python build_fact_rent_trend.py
-uv run python build_fact_suburb_profile.py
-uv run python build_fact_suburb_amenities.py
+- [LLM Engineering](https://www.udemy.com/course/llm-engineering-master-ai-and-large-language-models/) — RAG, fine-tuning, Claude API
+- [Agentic AI Engineering](https://www.udemy.com/course/agentic-ai-engineering/) — multi-agent systems, CrewAI, LangGraph, MCP
 
-# Validate the build
-uv run python test_data_model.py
+The goal was to build something real and useful using the skills from both courses — not a toy demo.
 
-# Run the app
-uv run python -m uvicorn main:app --reload --port 8502
+---
+
+## How to Run
+
+**1. Clone the repo**
+```bash
+git clone https://github.com/YOUR_USERNAME/perth-rental-finder.git
+cd perth-rental-finder
 ```
 
-`main.py` requires `database.py` (a thin DuckDB connection wrapper, not
-included in this listing — see your local setup) and an `ANTHROPIC_API_KEY`
-environment variable for the conversational workflows.
+**2. Install dependencies**
+```bash
+pip install -r requirements.txt
+```
 
-## Key files
+**3. Set your API key**
+```bash
+# Windows
+set ANTHROPIC_API_KEY=your_key_here
 
-- `main.py` — FastAPI app: the embedded chat frontend, the 6 named
-  workflow handlers, and the warehouse-reading data functions
-  (`get_all_suburbs_data`, `get_rent_trend_for`, `suburb_to_card`,
-  `suburb_deep_dive`, `find_suburb_mentions`, `match_suburbs`)
-- `agent.py` — the Claude tool-calling loop for free-form questions that
-  don't match one of the 6 named workflows
-- `tools.py` — the tools the agent above can call, reading the same
-  warehouse as `main.py`
-- `build_dim_suburb.py`, `build_fact_rent_trend.py`,
-  `build_fact_suburb_profile.py`, `build_fact_suburb_amenities.py`,
-  `load_bus_proximity.py` — the ETL scripts that build the warehouse from
-  raw source tables
-- `test_data_model.py` — referential integrity and coverage checks against
-  the built warehouse
-- `schema.sql` — full DDL reference for the dimensional model
-- `DATA_QUALITY.md` — the detailed findings, fixes, and known limitations
+# Mac/Linux
+export ANTHROPIC_API_KEY=your_key_here
+```
 
-## Status
+**4. Start the server**
+```bash
+uvicorn main:app --reload --port 8502
+```
 
-The data warehouse and all 6 named chat workflows, plus the general/agent
-fallback path, have been built, tested against real data, and smoke-tested
-against the live running app. The `/dashboard` page is built and live,
-reading from the same warehouse as the chat workflows. See
-`DATA_QUALITY.md` and `DEPLOYMENT.md` for the full findings and how this is
-deployed.
+**5. Open in browser**
+```
+http://localhost:8502
+```
 
-**Live app**: see the link at the top of this README (add it here once the
-Render deploy is confirmed working end to end).
+---
+
+## How It Works
+
+```
+User opens app
+     ↓
+Friendly intro → asks weekly budget
+     ↓
+Area selection (8 Perth regions, single-select chip)
+     ↓
+Amenity priorities (10 options, multi-select chips)
+     ↓
+Backend: match_suburbs() filters by budget + region + amenities
+     ↓
+Results: 3 best matches (cheapest first) + 3 "also consider"
+     ↓
+Free-form chat: compare, deep dive, property advisor
+```
+
+The `match_suburbs()` function ranks suburbs by amenity score, applies region filtering, then sorts ascending by rent. Results are backed by real bond data — bond return rate indicates landlord fairness, average tenure indicates community stability.
+
+---
+
+## Data Sources
+
+- **WA Government Bond Records** — 470,254 records from the Department of Mines, Industry Regulation and Safety
+- **School data** — Primary and secondary school counts per suburb
+- **Train network** — Distance to nearest station per suburb
+- **Crime data** — WA Police district-level crime statistics
+
+Suburb profiles for ~40 major Perth suburbs are hand-researched. Remaining ~160 suburbs use auto-generated data cards.
+
+---
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/` | Chat UI |
+| GET | `/dashboard` | Dashboard with 4 Chart.js charts |
+| POST | `/api/chat` | Free-form chat + workflows |
+| POST | `/api/survey-search` | Questionnaire search (region filter + rent sort) |
+| GET | `/api/perth-stats` | Live Perth rent stats |
+| GET | `/api/suburb-count` | Budget range → suburb count |
+| GET | `/api/amenity-groups` | Amenity options |
+
+---
+
+## What I Learned
+
+- Building and calling the Claude API for real conversational UX
+- Structuring a FastAPI backend with caching and data pipelines
+- Parsing and ranking real-world data (bond records, census, transport)
+- Frontend JS without a framework — state machines, DOM manipulation, localStorage persistence
+- Translating AI course concepts (RAG, agents, prompting) into a production-style project
+
+---
+
+## Acknowledgements
+
+Built following Ed Donner's [LLM Engineering](https://www.udemy.com/course/llm-engineering-master-ai-and-large-language-models/) and [Agentic AI Engineering](https://www.udemy.com/course/agentic-ai-engineering/) courses on Udemy.
+
+Data sourced from the Western Australian Government open data portal.
+
+---
+
+*Perth is the least affordable capital city in Australia for renters. This tool exists to help.*
