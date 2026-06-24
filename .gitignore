@@ -1,12 +1,31 @@
-﻿__pycache__/
+# Python
+__pycache__/
 *.py[cod]
+*.pyo
 .env
 venv/
 .venv/
+*.egg-info/
+
+# API keys / secrets
+.env
 .env.local
 secrets.py
+
+# OS
 .DS_Store
 Thumbs.db
+
+# Editor
 .cursor/
 .vscode/
+*.swp
+
+# Data (too large for GitHub)
+*.csv
+*.parquet
+*.db
+data/
+
+# Logs
 *.log
