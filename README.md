@@ -17,9 +17,9 @@
 
 ## Why I built this
 
-Perth is the least affordable capital city in Australia for renters. But the tools available to renters are mostly listing aggregators — they'll show you what's available, not whether a suburb is worth living in, whether the landlord is likely to be reasonable, or whether rents are heading up or down.
+Perth is the least affordable capital city in Australia for renters. But the tools available to renters are mostly listing aggregators. They show you what's available, not whether a suburb is worth living in, whether the landlord is likely to be reasonable, or whether rents are heading up or down.
 
-I wanted to build something that answered those questions honestly, using real data — not marketing copy. So I built Perth Rental Finder: a conversational tool that asks three quick questions and returns suburb recommendations backed by 470,254 real WA government tenancy bond records.
+I wanted to build something that answered those questions honestly, using real data, not marketing copy. I built Perth Rental Finder: a conversational tool that asks three quick questions and returns suburb recommendations backed by 470,254 real WA government tenancy bond records.
 
 ---
 
@@ -27,14 +27,14 @@ I wanted to build something that answered those questions honestly, using real d
 
 **A guided 3-step search:**
 
-1. **Budget** — type it naturally: `$600/wk`, `$500–$650`, `700`
-2. **Area** — tap your preferred region of Perth (north, south, inner city, near the beach, etc.)
-3. **Priorities** — select what matters most: train access, schools, cafes, hospital, parks, dog-friendly, and more
+1. **Budget:** type it naturally, `$600/wk`, `$500–$650`, `700`
+2. **Area:** tap your preferred region of Perth (north, south, inner city, near the beach, etc.)
+3. **Priorities:** select what matters most, train access, schools, cafes, hospital, parks, dog-friendly, and more
 
-Results are sorted cheapest-first and filtered by the region you chose — so if you pick "Northern suburbs", you won't see Fremantle in the results.
+Results are sorted cheapest-first and filtered by the region you chose. If you pick "Northern suburbs", you won't see Fremantle in the results.
 
 **Each suburb card shows:**
-- Median weekly rent + trend (↑ Rent rising / → Rent stable / ↓ Rent easing)
+- Median weekly rent + trend (↑ Rent rising, → Rent stable, ↓ Rent easing)
 - Bond return rate: the % of tenants who got their bond back, used as a signal for landlord fairness
 - Average tenant tenure: how long people tend to stay, used as a signal for community stability
 - Schools nearby (primary + secondary)
@@ -47,7 +47,7 @@ Results are sorted cheapest-first and filtered by the region you chose — so if
 - *"Is this a good lease agreement?"*
 
 **7 built-in renter tools** in a side panel:
-- Affordability calculator — enter your salary and see how much rent you can comfortably afford (based on the standard guideline that rent should be under 30% of your income)
+- Affordability calculator: enter your salary and see how much rent you can comfortably afford (based on the standard guideline that rent should be under 30% of your income)
 - Sharehouse rent splitter
 - Moving costs estimator
 - Lease break calculator (with WA law references)
@@ -77,7 +77,7 @@ All data is sourced from official Australian government datasets.
 
 | Dataset | Source | Used for |
 |---|---|---|
-| **Residential tenancy bonds** | [Department of Mines, Industry Regulation and Safety (DMIRS)](https://www.dmirs.wa.gov.au/content/bond-data) — 470,254 records | Median rent, bond return rate, average tenure per suburb |
+| **Residential tenancy bonds** | [Department of Mines, Industry Regulation and Safety (DMIRS)](https://www.dmirs.wa.gov.au/content/bond-data), 470,254 records | Median rent, bond return rate, average tenure per suburb |
 | **School locations** | [School Curriculum and Standards Authority (SCSA)](https://www.scsa.wa.edu.au) + [Data.WA](https://www.data.wa.gov.au) | Primary and secondary school counts per suburb |
 | **Public transport** | [Transperth GTFS feed](https://www.transperth.wa.gov.au/About/Spatial-Data-Access) | Distance to nearest train station per suburb |
 | **Crime statistics** | [WA Police Force annual statistical releases](https://www.police.wa.gov.au/Crime/CrimeStatistics) | Relative safety score per suburb |
@@ -139,10 +139,10 @@ Open `http://localhost:8502`
 
 This was the most technically demanding project I've built. A few things that stand out:
 
-- **Working with messy real data** — bond records, school catchments, and transport feeds all have their own quirks. Getting them to join cleanly took more work than the AI parts.
-- **Conversational UX is harder than it looks** — getting the Claude API to consistently route messages to the right workflow (search vs. compare vs. deep dive) required careful prompt engineering and fallback logic.
-- **Vanilla JS forces clarity** — without a framework, every interaction is explicit. I now understand state management in a way I didn't before.
-- **The gap between "working" and "production-ready"** — caching, error handling, graceful fallbacks, region filtering, and mobile responsiveness were all second-pass work that made the difference between a demo and something people can actually use.
+- **Working with messy real data:** bond records, school catchments, and transport feeds all have their own quirks. Getting them to join cleanly took more work than the AI parts.
+- **Conversational UX is harder than it looks.** Getting the Claude API to consistently route messages to the right workflow (search vs. compare vs. deep dive) required careful prompt engineering and fallback logic.
+- **Vanilla JS forces clarity.** Without a framework, every interaction is explicit. I now understand state management in a way I didn't before.
+- **The gap between "working" and "production-ready":** caching, error handling, graceful fallbacks, region filtering, and mobile responsiveness were all second-pass work that made the difference between a demo and something people can actually use.
 
 ---
 
@@ -150,8 +150,8 @@ This was the most technically demanding project I've built. A few things that st
 
 Built as a capstone portfolio project following two courses by [Ed Donner](https://edwarddonner.com):
 
-- [LLM Engineering — Master AI and Large Language Models](https://www.udemy.com/course/llm-engineering-master-ai-and-large-language-models/) — RAG pipelines, fine-tuning, prompt engineering, the Claude and OpenAI APIs
-- [The Complete Agentic AI Engineering Course](https://www.udemy.com/course/agentic-ai-engineering/) — multi-agent systems, CrewAI, LangGraph, OpenAI Agents SDK, MCP servers
+- [LLM Engineering: Master AI and Large Language Models](https://www.udemy.com/course/llm-engineering-master-ai-and-large-language-models/): RAG pipelines, fine-tuning, prompt engineering, the Claude and OpenAI APIs
+- [The Complete Agentic AI Engineering Course](https://www.udemy.com/course/agentic-ai-engineering/): multi-agent systems, CrewAI, LangGraph, OpenAI Agents SDK, MCP servers
 
 ---
 
