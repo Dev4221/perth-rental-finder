@@ -29,3 +29,9 @@ data/
 
 # Logs
 *.log
+
+archive/
+output*.txt
+suburb_*.txt
+diagnose_*.py
+load_transport_crime.py
