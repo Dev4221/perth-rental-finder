@@ -12,7 +12,6 @@
 
 ---
 
-![Perth Rental Finder — suburb results screen](assets/screenshot.png)
 
 ---
 
