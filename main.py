@@ -1344,7 +1344,7 @@ def suburb_to_card(row, rank_lbl, trend_df, min_r=None, max_r=None, exact_target
             sc = "green" if sf>=6 else "amber"
             chips.append({"icon":"shield","text":sl,"color":sc})
         except: pass
-    trend_label = {"rising":f"↑ Rising {abs(pct):.0f}%","easing":f"↓ Easing {abs(pct):.0f}%","stable":"→ Stable"}.get(signal,"")
+    trend_label = {"rising":f"↑ Rent rising {abs(pct):.0f}%","easing":f"↓ Rent easing {abs(pct):.0f}%","stable":"→ Rent stable"}.get(signal,"")
     trend_color = {"rising":"red","easing":"green","stable":"amber"}.get(signal,"gray")
     chips.append({"icon":"trend","text":trend_label,"color":trend_color})
 
@@ -1469,7 +1469,7 @@ def suburb_deep_dive(name):
             hist_note = f"Up from ${first_r:.0f}/wk in {first_m}"
 
     # Trend
-    trend_txt = {"rising":f"↑ Rising {abs(pct):.0f}%","easing":f"↓ Easing {abs(pct):.0f}%","stable":"→ Stable"}.get(signal,"Stable")
+    trend_txt = {"rising":f"↑ Rent rising {abs(pct):.0f}%","easing":f"↓ Rent easing {abs(pct):.0f}%","stable":"→ Rent stable"}.get(signal,"Stable")
     trend_note = {"rising":"act sooner rather than later","easing":"good time to negotiate","stable":"less pressure to rush"}.get(signal,"")
     trend_color = {"rising":"#E05252","easing":"#0D7C66","stable":"#B45309"}.get(signal,"#B45309")
 
