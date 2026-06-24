@@ -36,8 +36,8 @@ Results are sorted cheapest-first and filtered by the region you chose — so if
 
 **Each suburb card shows:**
 - Median weekly rent + trend (↑ Rent rising / → Rent stable / ↓ Rent easing)
-- Bond return rate — the % of tenants who got their bond back (a proxy for landlord fairness)
-- Average tenant tenure — how long people tend to stay (a proxy for community stability)
+- Bond return rate: the % of tenants who got their bond back, used as a signal for landlord fairness
+- Average tenant tenure: how long people tend to stay, used as a signal for community stability
 - Schools nearby (primary + secondary)
 - Distance to nearest train station
 - A plain-English profile of what the suburb is actually like
@@ -48,7 +48,7 @@ Results are sorted cheapest-first and filtered by the region you chose — so if
 - *"Is this a good lease agreement?"*
 
 **7 built-in renter tools** in a side panel:
-- Affordability calculator (salary → weekly take-home → 30% comfort limit)
+- Affordability calculator — enter your salary and see how much rent you can comfortably afford (based on the standard guideline that rent should be under 30% of your income)
 - Sharehouse rent splitter
 - Moving costs estimator
 - Lease break calculator (with WA law references)
@@ -68,7 +68,7 @@ Results are sorted cheapest-first and filtered by the region you chose — so if
 | Frontend | Vanilla JS, Chart.js | Chat UI, calculators, charts |
 | Hosting | Render | Production deployment |
 
-No frontend framework. The entire UI is vanilla JS — state machines, DOM rendering, localStorage persistence — because I wanted to understand how it works, not abstract it away.
+No frontend framework. The entire UI is vanilla JS with state machines, DOM rendering, and localStorage persistence. I built it this way to understand how it works, not abstract it away.
 
 ---
 
