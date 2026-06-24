@@ -12,7 +12,7 @@
 
 Perth is the least affordable capital city in Australia for renters. Most search tools show you listings. This one helps you figure out *which suburb* to look in — based on your actual budget, where you need to be, and what matters to you day-to-day.
 
-It's backed by 470,254 real WA government bond records, so the data on landlord fairness, how long people tend to stay, and what rents are actually doing comes from real tenancy history — not estimates.
+The data comes from real tenancy history, government records, and public datasets — not estimates or marketing copy.
 
 ---
 
@@ -24,7 +24,7 @@ You answer three quick questions:
 2. **Which part of Perth?** — tap a region (north, south, inner city, beach, etc.)
 3. **What matters most nearby?** — train station, schools, beach, cafes, hospital, etc.
 
-The app matches suburbs to your answers, sorts them cheapest-first, and gives you a breakdown of each one — rent trend, bond return rate, schools, train access, and a plain-English profile of what it's actually like to live there.
+The app matches suburbs to your answers, sorts them cheapest-first, and gives you a breakdown of each one — rent trend, landlord fairness score, schools, train access, and a plain-English profile of what it's actually like to live there.
 
 After the results, you can keep chatting — compare two suburbs, ask about a specific area, or get advice on a lease.
 
@@ -37,19 +37,32 @@ After the results, you can keep chatting — compare two suburbs, ask about a sp
 | Backend | Python, FastAPI, Pandas, DuckDB |
 | Frontend | Vanilla JS, Chart.js |
 | AI | Claude API (Anthropic) |
-| Data | 470,254 WA Government bond records |
+| Data | 470,254 residential tenancy bond records |
 | Hosting | Render |
 
 ---
 
-## Background
+## Data sources
 
-I built this as a portfolio project while completing two courses by Ed Donner:
+**Residential tenancy bonds** — 470,254 bond records from the Department of Mines, Industry Regulation and Safety (DMIRS), covering bond lodgements, returns, and dispute outcomes across Perth suburbs. Used to calculate median rent, landlord fairness (bond return rate), and average tenant tenure per suburb.
 
-- [LLM Engineering](https://www.udemy.com/course/llm-engineering-master-ai-and-large-language-models/) — working with large language models, RAG, fine-tuning, the Claude API
-- [Agentic AI Engineering](https://www.udemy.com/course/agentic-ai-engineering/) — multi-agent systems, CrewAI, LangGraph, MCP servers
+**Schools** — Primary and secondary school locations sourced from the School Curriculum and Standards Authority (SCSA) and cross-referenced with suburb boundaries. Used to show school counts within each suburb's catchment area.
 
-The goal was to build something genuinely useful, not just a demo. Perth's rental market felt like the right problem — it's real, it's local, and good information is hard to find.
+**Public transport** — Train station locations and bus route coverage sourced from Transperth's open GTFS feed. Used to calculate distance to nearest train station per suburb.
+
+**Crime statistics** — District-level crime data from WA Police Force annual statistical releases. Used to generate a relative safety score per suburb based on offence rates.
+
+**Postcodes and suburb boundaries** — Australian Bureau of Statistics (ABS) suburb and locality boundaries, cross-referenced with Australia Post postcode data to map records to correct suburbs.
+
+---
+
+## What I learned building this
+
+- How to call the Claude API and shape it into a real conversational experience
+- Building a FastAPI backend with caching, data pipelines, and multiple endpoints
+- Working with real messy data — bond records, school catchments, transport networks
+- Writing frontend JS without a framework: state machines, DOM rendering, localStorage
+- The gap between "AI course project" and "something people can actually use"
 
 ---
 
@@ -71,28 +84,3 @@ export ANTHROPIC_API_KEY=your_key_here     # Mac/Linux
 uvicorn main:app --reload --port 8502
 # Open http://localhost:8502
 ```
-
----
-
-## Data sources
-
-- WA Government bond records — 470,254 tenancy bonds lodged with the Department of Mines, Industry Regulation and Safety
-- School counts per suburb — primary and secondary
-- Train station distances — nearest station per suburb
-- Crime data — WA Police district-level statistics
-
-Suburb profiles for ~40 major Perth suburbs are hand-researched. The rest use auto-generated cards built from the data above.
-
----
-
-## What I learned building this
-
-- How to call the Claude API and shape it into a real conversational experience
-- Building a FastAPI backend with caching, data pipelines, and multiple endpoints
-- Working with real messy data — bond records, school catchments, transport networks
-- Writing frontend JS without a framework: state machines, DOM rendering, localStorage
-- The gap between "AI course project" and "something people can actually use"
-
----
-
-*Data sourced from the Western Australian Government open data portal. Built following Ed Donner's LLM Engineering and Agentic AI Engineering courses.*
